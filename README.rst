@@ -108,8 +108,29 @@ The `capturer` package uses a pseudo terminal created using `pty.openpty()`_ to
 capture output. This means subprocesses will use ANSI escape sequences because
 they think they're connected to a terminal. In the current implementation you
 can't opt out of this, but feel free to submit a feature request to change this
-:-). The use of `pty.openpty()`_ means you need to be running in a UNIX like
-environment for `capturer` to work.
+:-). This does have some drawbacks:
+
+- The use of `pty.openpty()`_ means you need to be running in a UNIX like
+  environment for `capturer` to work (Windows definitely isn't supported).
+
+- All output captured is relayed on the stderr_ stream, so capturing changes
+  the semantics of your programs. How much this matters obviously depends on
+  your use case. For the use cases that triggered me to create `capturer` it
+  doesn't matter, which explains why this hasn't bothered me enough to try and
+  improve it. I've thought about it though:
+
+  I'm not sure whether it's possible to change this "implementation detail"
+  without introducing other (significant) drawbacks (like implementation
+  complexity). For example I could allocate two pseudo terminals, connect
+  stdout_ to one of them, stderr_ to the other and read from both in real time.
+  That would require two threads or subprocesses instead of one. But then a
+  third thread or subprocess would need to merge the streams again before
+  relaying output to the real terminal, otherwise relayed stdout_ and stderr_
+  output can intermingle in unpleasant ways :-). Even so, there would be no
+  guarantees about the sequence in which stdout_ and stderr_ are captured and
+  relayed (due to processor scheduling of separate threads of execution,
+  whether using multithreading or multiprocessing). For now I'm not convinced
+  it's worth the effort...
 
 Relays output to the terminal in real time
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
