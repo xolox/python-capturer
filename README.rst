@@ -4,7 +4,7 @@ capturer: Easily capture stdout/stderr of the current process and subprocesses
 .. image:: https://travis-ci.org/xolox/python-capturer.svg?branch=master
    :target: https://travis-ci.org/xolox/python-capturer
 
-.. image:: https://coveralls.io/repos/xolox/python-capturer/badge.png?branch=master
+.. image:: https://coveralls.io/repos/xolox/python-capturer/badge.svg?branch=master
   :target: https://coveralls.io/r/xolox/python-capturer?branch=master
 
 The `capturer` package makes it easy to capture the stdout_ and stderr_ streams
