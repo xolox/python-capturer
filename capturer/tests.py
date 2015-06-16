@@ -1,14 +1,16 @@
 # Easily capture stdout/stderr of the current process and subprocesses.
 #
 # Author: Peter Odding <peter@peterodding.com>
-# Last Change: June 14, 2015
+# Last Change: June 16, 2015
 # URL: https://capturer.readthedocs.org
 
 # Standard library modules.
+import os
 import random
 import string
 import subprocess
 import sys
+import tempfile
 import time
 import unittest
 
@@ -30,11 +32,15 @@ class CapturerTestCase(unittest.TestCase):
 
     def test_error_handling(self):
         capturer = CaptureOutput()
+        # CaptureOutput.get_handle() calls should raise an exception if output
+        # capturing hasn't been enabled yet.
+        self.assertRaises(TypeError, capturer.get_handle)
         # Nested CaptureOutput.prepare_capture() calls should raise an exception.
         capturer.prepare_capture()
         try:
             self.assertRaises(TypeError, capturer.prepare_capture)
         finally:
+            # Make sure not to start swallowing output here ;-).
             capturer.finish_capture()
         # Nested Stream.redirect() calls should raise an exception.
         stream = Stream(sys.stdout.fileno())
@@ -133,14 +139,26 @@ class CapturerTestCase(unittest.TestCase):
     def test_non_interpreted_lines_capture(self):
         expected_output = random_string()
         with CaptureOutput() as capturer:
-            sys.stderr.write("%s\n" % expected_output)
+            print(expected_output)
             assert expected_output in capturer.get_lines(interpreted=False)
 
     def test_text_capture(self):
         expected_output = random_string()
         with CaptureOutput() as capturer:
-            sys.stderr.write("%s\n" % expected_output)
+            print(expected_output)
             assert expected_output in capturer.get_text()
+
+    def test_save_to_path(self):
+        expected_output = random_string()
+        with CaptureOutput() as capturer:
+            print(expected_output)
+            fd, temporary_file = tempfile.mkstemp()
+            try:
+                capturer.save_to_path(temporary_file)
+                with open(temporary_file, 'r') as handle:
+                    assert expected_output in handle.read()
+            finally:
+                os.unlink(temporary_file)
 
 
 def random_string():

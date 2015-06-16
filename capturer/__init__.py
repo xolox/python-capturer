@@ -8,6 +8,7 @@
 import multiprocessing
 import os
 import pty
+import shutil
 import signal
 import sys
 import tempfile
@@ -32,8 +33,11 @@ The number of seconds to wait before terminating the output relay process (a
 floating point number).
 """
 
+PARTIAL_DEFAULT = False
+"""Whether partial reads are enabled or disabled by default (a boolean)."""
+
 # Semi-standard module versioning.
-__version__ = '1.0'
+__version__ = '1.1'
 
 
 class CaptureOutput(object):
@@ -57,12 +61,11 @@ class CaptureOutput(object):
                            captured streams on each call to :func:`os.read()`
                            (an integer).
         """
-        self.cached_output = b''
         self.chunk_size = chunk_size
         self.encoding = encoding
         self.master_fd = None
         self.output_fd = None
-        self.output_file = None
+        self.output_handle = None
         self.relay_process = None
         self.slave_fd = None
         self.stderr = Stream(sys.stderr.fileno())
@@ -113,7 +116,13 @@ class CaptureOutput(object):
             stream.redirect(self.slave_fd)
         # Create a temporary file in which we'll store the output received on
         # the master end of the pseudo terminal.
-        self.output_fd, self.output_file = tempfile.mkstemp()
+        self.output_fd, output_file = tempfile.mkstemp()
+        self.output_handle = open(output_file, 'rb')
+        # Unlink the temporary file because we have a readable file descriptor
+        # and a writable file descriptor and that's all we need! If this
+        # surprises you I suggest you investigate why unlink() was named the
+        # way it was in UNIX :-).
+        os.unlink(output_file)
 
     def finish_capture(self):
         """
@@ -133,13 +142,6 @@ class CaptureOutput(object):
         # Restore the original stdout/stderr streams?
         for stream in (self.stdout, self.stderr):
             stream.restore()
-        # Process the temporary file?
-        if self.output_file:
-            # Read the captured output into memory.
-            self.cache_output()
-            # Remove the temporary file.
-            os.unlink(self.output_file)
-            self.output_file = None
 
     def start_relaying(self):
         """Start the child process that relays captured output to the terminal in real time."""
@@ -165,48 +167,61 @@ class CaptureOutput(object):
             self.relay_process.join()
             self.relay_process = None
 
-    def cache_output(self):
+    def get_handle(self, partial=PARTIAL_DEFAULT):
         """
-        Read the output captured in the temporary file and store it in memory.
+        Get the captured output as a Python file object.
 
-        Used by :func:`finish_capture()` and :func:`get_bytes()` to (re)read
-        the temporary file.
+        :param partial: If :data:`True` (*not the default*) the partial output
+                        captured so far is returned, otherwise (*so by
+                        default*) the relay process is terminated and output
+                        capturing is disabled before returning the captured
+                        output (the default is intended to protect unsuspecting
+                        users against partial reads).
+        :returns: The captured output as a Python file object. The file
+                  object's current position is reset to zero before this
+                  function returns.
+        :raises: :exc:`~exceptions.TypeError` when capturing of output hasn't
+                 been enabled yet.
+
+        This method is useful when you're dealing with arbitrary amounts of
+        captured data that you don't want to load into memory just so you can
+        save it to a file again. In fact, in that case you might want to take a
+        look at :func:`save_to_path()` and/or :func:`save_to_handle()` :-).
+
+        .. warning:: Two caveats about the use of this method:
+
+                     1. If partial is :data:`True` (not the default) the output
+                        can end in a partial line, possibly in the middle of an
+                        ANSI escape sequence or a multi byte character.
+
+                     2. If you close this file handle you just lost your last
+                        chance to get at the captured output! (calling this
+                        method again will not give you a new file handle)
         """
-        if self.output_file and os.path.isfile(self.output_file):
-            with open(self.output_file, 'rb') as handle:
-                self.cached_output = handle.read()
+        if self.output_handle is None:
+            raise TypeError("Output capturing hasn't been enabled yet!")
+        if not partial:
+            self.stop_relaying()
+            self.finish_capture()
+        self.output_handle.seek(0)
+        return self.output_handle
 
-    def get_bytes(self, partial=False):
+    def get_bytes(self, partial=PARTIAL_DEFAULT):
         """
         Get the captured output as binary data.
 
-        :param partial: If :data:`True` (not the default) the partial output
-                        captured so far is returned, otherwise (so by default)
-                        the relay process is terminated and output capturing is
-                        disabled before returning the captured output.
+        :param partial: Refer to :func:`get_handle()` for details.
         :returns: The captured output as a binary string.
-
-        .. warning:: If partial is :data:`True` (not the default) the output
-                     can end in a partial line, possibly in the middle of an
-                     ANSI escape sequence or a multi byte character.
         """
-        if partial:
-            self.cache_output()
-        else:
-            self.stop_relaying()
-            self.finish_capture()
-        return self.cached_output
+        return self.get_handle(partial).read()
 
-    def get_lines(self, interpreted=True, partial=False):
+    def get_lines(self, interpreted=True, partial=PARTIAL_DEFAULT):
         """
         Get the captured output split into lines.
 
         :param interpreted: If :data:`True` (the default) captured output is
                             processed using :func:`interpret_carriage_returns()`.
-        :param partial: If :data:`True` (not the default) the partial output
-                        captured so far is returned, otherwise (so by default)
-                        the relay process is terminated and output capturing is
-                        disabled before returning the captured output.
+        :param partial: Refer to :func:`get_handle()` for details.
         :returns: The captured output as a list of Unicode strings.
 
         .. warning:: If partial is :data:`True` (not the default) the output
@@ -220,16 +235,13 @@ class CaptureOutput(object):
         else:
             return output.splitlines()
 
-    def get_text(self, interpreted=True, partial=False):
+    def get_text(self, interpreted=True, partial=PARTIAL_DEFAULT):
         """
         Get the captured output as a single string.
 
         :param interpreted: If :data:`True` (the default) captured output is
                             processed using :func:`interpret_carriage_returns()`.
-        :param partial: If :data:`True` (not the default) the partial output
-                        captured so far is returned, otherwise (so by default)
-                        the relay process is terminated and output capturing is
-                        disabled before returning the captured output.
+        :param partial: Refer to :func:`get_handle()` for details.
         :returns: The captured output as a Unicode string.
 
         .. warning:: If partial is :data:`True` (not the default) the output
@@ -241,6 +253,26 @@ class CaptureOutput(object):
         if interpreted:
             output = u'\n'.join(interpret_carriage_returns(output))
         return output
+
+    def save_to_handle(self, handle, partial=PARTIAL_DEFAULT):
+        """
+        Save the captured output to an open file handle.
+
+        :param handle: A writable file-like object.
+        :param partial: Refer to :func:`get_handle()` for details.
+        """
+        shutil.copyfileobj(self.get_handle(partial), handle)
+
+    def save_to_path(self, filename, partial=PARTIAL_DEFAULT):
+        """
+        Save the captured output to a file.
+
+        :param filename: The pathname of the file where the captured output
+                         should be written to (a string).
+        :param partial: Refer to :func:`get_handle()` for details.
+        """
+        with open(filename, 'wb') as handle:
+            self.save_to_handle(handle, partial)
 
     def relay_loop(self):
         """
