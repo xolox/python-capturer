@@ -1,7 +1,7 @@
 # Easily capture stdout/stderr of the current process and subprocesses.
 #
 # Author: Peter Odding <peter@peterodding.com>
-# Last Change: June 14, 2015
+# Last Change: June 16, 2015
 # URL: https://capturer.readthedocs.org
 
 # Standard library modules.
@@ -357,12 +357,26 @@ def interpret_carriage_returns(text):
        and the last carriage return delimited substring is used as the line.
     4. Trailing empty lines are stripped.
 
-    .. note:: Formally speaking the effect of carriage returns cannot be
-              emulated outside of an actual terminal (due to the interaction
-              between overlapping output, terminal widths and line wrapping).
-              The goal of this function is to sanitize noise in terminal output
-              while preserving useful output. Think of it as a useful and
-              pragmatic but lossy conversion.
+    **Some caveats about the use of this function:**
+
+    - Strictly speaking the effect of carriage returns cannot be emulated
+      outside of an actual terminal due to the interaction between overlapping
+      output, terminal widths and line wrapping. The goal of this function is
+      to sanitize noise in terminal output while preserving useful output.
+      Think of it as a useful and pragmatic but lossy conversion.
+
+    - The algorithm (as defined by the steps above) isn't smart enough to deal
+      with a pair of ANSI escape sequences that open before a carriage return
+      and close after the last carriage return in a linefeed delimited string;
+      the resulting string will contain only the closing end of the ANSI escape
+      sequence pair. Tracking this kind of complexity requires a state machine
+      and proper parsing.
+
+    Nevertheless :func:`interpret_carriage_returns()` is used by the `capturer`
+    package by default and you need to opt out of its usage. This is because my
+    impression is that the edge cases documented here are just that; edge cases
+    that most people would never know existed if I hadn't gone through the
+    effort of documenting them for everyone to read :-).
     """
     result = []
     for line in text.split('\n'):
