@@ -1,7 +1,7 @@
 # Easily capture stdout/stderr of the current process and subprocesses.
 #
 # Author: Peter Odding <peter@peterodding.com>
-# Last Change: June 16, 2015
+# Last Change: June 18, 2015
 # URL: https://capturer.readthedocs.org
 
 # Standard library modules.
@@ -31,14 +31,11 @@ class CapturerTestCase(unittest.TestCase):
         assert interpret_carriage_returns('foo\nbar\nbaz\n\n\n') == ['foo', 'bar', 'baz']
 
     def test_error_handling(self):
+        # Nested CaptureOutput.start_capture() calls should raise an exception.
         capturer = CaptureOutput()
-        # CaptureOutput.get_handle() calls should raise an exception if output
-        # capturing hasn't been enabled yet.
-        self.assertRaises(TypeError, capturer.get_handle)
-        # Nested CaptureOutput.prepare_capture() calls should raise an exception.
-        capturer.prepare_capture()
+        capturer.start_capture()
         try:
-            self.assertRaises(TypeError, capturer.prepare_capture)
+            self.assertRaises(TypeError, capturer.start_capture)
         finally:
             # Make sure not to start swallowing output here ;-).
             capturer.finish_capture()
@@ -159,6 +156,15 @@ class CapturerTestCase(unittest.TestCase):
                     assert expected_output in handle.read()
             finally:
                 os.unlink(temporary_file)
+
+    def test_unmerged_capture(self):
+        expected_stdout = random_string()
+        expected_stderr = random_string()
+        with CaptureOutput(merged=False) as capturer:
+            sys.stdout.write(expected_stdout + "\n")
+            sys.stderr.write(expected_stderr + "\n")
+            assert expected_stdout in capturer.stdout.get_lines()
+            assert expected_stderr in capturer.stderr.get_lines()
 
 
 def random_string():

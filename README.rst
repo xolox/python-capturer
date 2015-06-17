@@ -113,24 +113,24 @@ can't opt out of this, but feel free to submit a feature request to change this
 - The use of `pty.openpty()`_ means you need to be running in a UNIX like
   environment for `capturer` to work (Windows definitely isn't supported).
 
-- All output captured is relayed on the stderr_ stream, so capturing changes
-  the semantics of your programs. How much this matters obviously depends on
-  your use case. For the use cases that triggered me to create `capturer` it
-  doesn't matter, which explains why this hasn't bothered me enough to try and
-  improve it. I've thought about it though:
+- All output captured is relayed on the stderr_ stream by default, so capturing
+  changes the semantics of your programs. How much this matters obviously
+  depends on your use case. For the use cases that triggered me to create
+  `capturer` it doesn't matter, which explains why this is the default mode.
 
-  I'm not sure whether it's possible to change this "implementation detail"
-  without introducing other (significant) drawbacks (like implementation
-  complexity). For example I could allocate two pseudo terminals, connect
-  stdout_ to one of them, stderr_ to the other and read from both in real time.
-  That would require two threads or subprocesses instead of one. But then a
-  third thread or subprocess would need to merge the streams again before
-  relaying output to the real terminal, otherwise relayed stdout_ and stderr_
-  output can intermingle in unpleasant ways :-). Even so, there would be no
-  guarantees about the sequence in which stdout_ and stderr_ are captured and
-  relayed (due to processor scheduling of separate threads of execution,
-  whether using multithreading or multiprocessing). For now I'm not convinced
-  it's worth the effort...
+  There is experimental support for capturing stdout_ and stderr_ separately
+  and relaying captured output to the appropriate original stream. Basically
+  you call ``CaptureOutput(merged=False)`` and then you use the ``stdout`` and
+  ``stderr`` attributes of the ``CaptureOutput`` object to get at the output
+  captured on each stream.
+
+  I say experimental because this method of capturing can unintentionally
+  change the order in which captured output is emitted, in order to avoid
+  interleaving output emitted on the stdout_ and stderr_ streams (which would
+  most likely result in incomprehensible output). Basically output is relayed
+  on each stream separately after each line break. This means interactive
+  prompts that block on reading from standard input without emitting a line
+  break won't show up (until it's too late ;-).
 
 Relays output to the terminal in real time
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
