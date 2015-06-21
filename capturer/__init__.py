@@ -1,7 +1,7 @@
 # Easily capture stdout/stderr of the current process and subprocesses.
 #
 # Author: Peter Odding <peter@peterodding.com>
-# Last Change: June 18, 2015
+# Last Change: June 21, 2015
 # URL: https://capturer.readthedocs.org
 
 # Standard library modules.
@@ -10,6 +10,7 @@ import os
 import pty
 import shutil
 import signal
+import sys
 import tempfile
 import time
 
@@ -48,7 +49,7 @@ integer).
 """
 
 # Semi-standard module versioning.
-__version__ = '2.0'
+__version__ = '2.1'
 
 
 class MultiProcessHelper(object):
@@ -150,9 +151,49 @@ class CaptureOutput(MultiProcessHelper):
         self.merged = merged
         self.termination_delay = termination_delay
         # Initialize instance variables.
-        self.stdout_stream = Stream(STDOUT_FD)
-        self.stderr_stream = Stream(STDERR_FD)
         self.pseudo_terminals = []
+        self.streams = []
+        # Initialize stdout/stderr stream containers.
+        self.stdout_stream = self.initialize_stream(sys.stdout, STDOUT_FD)
+        self.stderr_stream = self.initialize_stream(sys.stderr, STDERR_FD)
+
+    def initialize_stream(self, file_obj, expected_fd):
+        """
+        Initialize one or more :class:`Stream` objects to capture a standard stream.
+
+        :param file_obj: A file-like object with a ``fileno()`` method.
+        :param expected_fd: The expected file descriptor of the file-like object.
+        :returns: The :class:`Stream` connected to the file descriptor of the
+                  file-like object.
+
+        By default this method just initializes a :class:`Stream` object
+        connected to the given file-like object and its underlying file
+        descriptor (a simple one-liner).
+
+        If however the file descriptor of the file-like object doesn't have the
+        expected value (``expected_fd``) two :class:`Stream` objects will be
+        created instead: One of the stream objects will be connected to the
+        file descriptor of the file-like object and the other stream object
+        will be connected to the file descriptor that was expected
+        (``expected_fd``).
+
+        This approach is intended to make sure that "nested" output capturing
+        works as expected: Output from the current Python process is captured
+        from the file descriptor of the file-like object while output from
+        subprocesses is captured from the file descriptor given by
+        ``expected_fd`` (because the operating system defines special semantics
+        for the file descriptors with the numbers one and two that we can't
+        just ignore).
+
+        For more details refer to `issue 2 on GitHub
+        <https://github.com/xolox/python-capturer/issues/2>`_.
+        """
+        real_fd = file_obj.fileno()
+        stream_obj = Stream(real_fd)
+        self.streams.append((expected_fd, stream_obj))
+        if real_fd != expected_fd:
+            self.streams.append((expected_fd, Stream(expected_fd)))
+        return stream_obj
 
     def __enter__(self):
         self.start_capture()
@@ -164,7 +205,7 @@ class CaptureOutput(MultiProcessHelper):
     @property
     def is_capturing(self):
         """:data:`True` if output is being captured, :data:`False` otherwise."""
-        return self.stdout_stream.is_redirected or self.stderr_stream.is_redirected
+        return any(stream.is_redirected for kind, stream in self.streams)
 
     def start_capture(self):
         """
@@ -183,8 +224,8 @@ class CaptureOutput(MultiProcessHelper):
         if self.merged:
             # Capture and relay stdout/stderr as one stream.
             self.output = self.allocate_pty(relay_fd=self.stderr_stream.original_fd)
-            self.output.attach(self.stdout_stream)
-            self.output.attach(self.stderr_stream)
+            for kind, stream in self.streams:
+                self.output.attach(stream)
             # Enable compatibility with the old API where stdout/stderr were
             # unconditionally captured as a single stream and so these methods
             # were available on the CaptureOutput class (because that made
@@ -197,8 +238,13 @@ class CaptureOutput(MultiProcessHelper):
             self.start_child(self.merge_loop)
             self.stdout = self.allocate_pty(output_queue=self.output_queue, queue_token=STDOUT_FD)
             self.stderr = self.allocate_pty(output_queue=self.output_queue, queue_token=STDERR_FD)
-            self.stdout.attach(self.stdout_stream)
-            self.stderr.attach(self.stderr_stream)
+            for kind, stream in self.streams:
+                if kind == STDOUT_FD:
+                    self.stdout.attach(stream)
+                elif kind == STDERR_FD:
+                    self.stderr.attach(stream)
+                else:
+                    raise Exception("Programming error: Unrecognized stream type!")
         # Start capturing and relaying of output (in one or two subprocesses).
         for pseudo_terminal in self.pseudo_terminals:
             pseudo_terminal.start_capture()
