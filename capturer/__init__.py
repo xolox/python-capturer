@@ -1,7 +1,7 @@
 # Easily capture stdout/stderr of the current process and subprocesses.
 #
 # Author: Peter Odding <peter@peterodding.com>
-# Last Change: June 21, 2015
+# Last Change: October 24, 2015
 # URL: https://capturer.readthedocs.org
 
 # Standard library modules.
@@ -49,7 +49,7 @@ integer).
 """
 
 # Semi-standard module versioning.
-__version__ = '2.1'
+__version__ = '2.1.1'
 
 
 class MultiProcessHelper(object):

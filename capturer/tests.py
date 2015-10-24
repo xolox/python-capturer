@@ -1,7 +1,7 @@
 # Easily capture stdout/stderr of the current process and subprocesses.
 #
 # Author: Peter Odding <peter@peterodding.com>
-# Last Change: June 18, 2015
+# Last Change: October 24, 2015
 # URL: https://capturer.readthedocs.org
 
 # Standard library modules.
@@ -71,7 +71,10 @@ class CapturerTestCase(unittest.TestCase):
             subprocess.call([
                 sys.executable,
                 '-c',
-                'import sys; sys.stdout.write(%r)' % (expected_stdout + '\n'),
+                ';'.join([
+                    'import sys',
+                    'sys.stdout.write(%r)' % (expected_stdout + '\n'),
+                ]),
             ])
             assert expected_stdout in capturer.get_lines()
 
@@ -81,7 +84,10 @@ class CapturerTestCase(unittest.TestCase):
             subprocess.call([
                 sys.executable,
                 '-c',
-                'import sys; sys.stderr.write(%r)' % (expected_stderr + '\n'),
+                ';'.join([
+                    'import sys',
+                    'sys.stderr.write(%r)' % (expected_stderr + '\n'),
+                ]),
             ])
             assert expected_stderr in capturer.get_lines()
 
@@ -92,9 +98,11 @@ class CapturerTestCase(unittest.TestCase):
             subprocess.call([
                 sys.executable,
                 '-c',
-                'import sys;' \
-                + 'sys.stdout.write(%r);' % (expected_stdout + '\n') \
-                + 'sys.stderr.write(%r);' % (expected_stderr + '\n')
+                ';'.join([
+                    'import sys',
+                    'sys.stdout.write(%r)' % (expected_stdout + '\n'),
+                    'sys.stderr.write(%r)' % (expected_stderr + '\n'),
+                ]),
             ])
             assert expected_stdout in capturer.get_lines()
             assert expected_stderr in capturer.get_lines()
@@ -179,3 +187,7 @@ def retry(func, timeout=10):
         if func():
             return
     assert False, "Timeout expired but function never passed all assertions!"
+
+
+if __name__ == '__main__':
+    unittest.main()
