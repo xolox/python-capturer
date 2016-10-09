@@ -3,7 +3,7 @@
 # Setup script for the `capturer' package.
 #
 # Author: Peter Odding <peter@peterodding.com>
-# Last Change: June 14, 2015
+# Last Change: October 9, 2016
 # URL: https://capturer.readthedocs.org
 
 # Standard library modules.
@@ -43,6 +43,9 @@ setup(
     author_email='peter@peterodding.com',
     packages=find_packages(),
     test_suite='capturer.tests',
+    install_requires=[
+        'humanfriendly >= 2.1',
+    ],
     classifiers=[
         'Development Status :: 4 - Beta',
         'Environment :: Console',

@@ -14,6 +14,18 @@ import sys
 import tempfile
 import time
 
+# External dependencies.
+from humanfriendly.terminal import clean_terminal_output
+
+interpret_carriage_returns = clean_terminal_output
+"""
+Alias to :func:`humanfriendly.terminal.clean_terminal_output()`.
+
+In `capturer` version 2.1.2 the ``interpret_carriage_returns()`` function was
+obsoleted by :func:`humanfriendly.terminal.clean_terminal_output()`. This alias
+remains for backwards compatibility.
+"""
+
 DEFAULT_TEXT_ENCODING = 'UTF-8'
 """
 The name of the default character encoding used to convert captured output to
@@ -621,59 +633,6 @@ def enable_old_api():
             return real_method(*args, **kw)
         method_proxy.__doc__ = getattr(PseudoTerminal, name).__doc__
         setattr(CaptureOutput, name, method_proxy)
-
-
-def interpret_carriage_returns(text):
-    """
-    Emulate the effect of carriage returns on terminals.
-
-    :param text: The raw text containing carriage returns and line feeds (a
-                 Unicode string).
-    :returns: A list of Unicode strings (one for each line).
-
-    This function works as follows:
-
-    1. The given string is split on line feed characters (represented as
-       ``\\n`` in Python).
-    2. Any leading and trailing carriage return characters (represented as
-       ``\\r`` in Python) are stripped from each line.
-    3. The remaining text in each line is split on carriage return characters
-       and the last carriage return delimited substring is used as the line.
-    4. Trailing empty lines are stripped.
-
-    **Some caveats about the use of this function:**
-
-    - Strictly speaking the effect of carriage returns cannot be emulated
-      outside of an actual terminal due to the interaction between overlapping
-      output, terminal widths and line wrapping. The goal of this function is
-      to sanitize noise in terminal output while preserving useful output.
-      Think of it as a useful and pragmatic but lossy conversion.
-
-    - The algorithm (as defined by the steps above) isn't smart enough to deal
-      with a pair of ANSI escape sequences that open before a carriage return
-      and close after the last carriage return in a linefeed delimited string;
-      the resulting string will contain only the closing end of the ANSI escape
-      sequence pair. Tracking this kind of complexity requires a state machine
-      and proper parsing.
-
-    Nevertheless :func:`interpret_carriage_returns()` is used by the `capturer`
-    package by default and you need to opt out of its usage. This is because my
-    impression is that the edge cases documented here are just that; edge cases
-    that most people would never know existed if I hadn't gone through the
-    effort of documenting them for everyone to read :-).
-    """
-    result = []
-    for line in text.split('\n'):
-        # Strip leading and/or trailing carriage returns.
-        line = line.strip('\r')
-        # Split the line on any remaining carriage returns.
-        parts = line.split('\r')
-        # Preserve only the last carriage return delimited substring.
-        result.append(parts[-1])
-    # Remove empty trailing lines.
-    while result and not result[-1]:
-        result.pop(-1)
-    return result
 
 
 class ShutdownRequested(Exception):
