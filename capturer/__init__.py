@@ -1,7 +1,7 @@
 # Easily capture stdout/stderr of the current process and subprocesses.
 #
 # Author: Peter Odding <peter@peterodding.com>
-# Last Change: October 24, 2015
+# Last Change: October 9, 2016
 # URL: https://capturer.readthedocs.org
 
 # Standard library modules.
@@ -111,15 +111,13 @@ class MultiProcessHelper(object):
         signal.signal(GRACEFUL_SHUTDOWN_SIGNAL, self.raise_shutdown_request)
 
     def raise_shutdown_request(self, signum, frame):
-        """Raises :exc:`ShutdownRequested` when :data:`GRACEFUL_SHUTDOWN_SIGNAL` is received."""
+        """Raise :exc:`ShutdownRequested` when :data:`GRACEFUL_SHUTDOWN_SIGNAL` is received."""
         raise ShutdownRequested
 
 
 class CaptureOutput(MultiProcessHelper):
 
-    """
-    Context manager to capture the standard output and error streams.
-    """
+    """Context manager to capture the standard output and error streams."""
 
     def __init__(self, merged=True, encoding=DEFAULT_TEXT_ENCODING, termination_delay=TERMINATION_DELAY, chunk_size=1024):
         """
@@ -196,10 +194,12 @@ class CaptureOutput(MultiProcessHelper):
         return stream_obj
 
     def __enter__(self):
+        """Automatically call :func:`start_capture()` when entering a :keyword:`with` block."""
         self.start_capture()
         return self
 
     def __exit__(self, exc_type=None, exc_value=None, traceback=None):
+        """Automatically call :func:`finish_capture()` when leaving a :keyword:`with` block."""
         self.finish_capture()
 
     @property
@@ -264,7 +264,9 @@ class CaptureOutput(MultiProcessHelper):
 
     def allocate_pty(self, relay_fd=None, output_queue=None, queue_token=None):
         """
-        Internal shortcut for :func:`start_capture()` to allocate one or more
+        Allocate a pseudo terminal.
+
+        Internal shortcut for :func:`start_capture()` to allocate multiple
         pseudo terminals without code duplication.
         """
         obj = PseudoTerminal(
@@ -604,9 +606,7 @@ class Stream(object):
         self.is_redirected = True
 
     def restore(self):
-        """
-        Stop redirecting output written to the file descriptor.
-        """
+        """Stop redirecting output written to the file descriptor."""
         if self.is_redirected:
             os.dup2(self.original_fd, self.fd)
             self.is_redirected = False
@@ -677,6 +677,7 @@ def interpret_carriage_returns(text):
 
 
 class ShutdownRequested(Exception):
+
     """
     Raised by :func:`~MultiProcessHelper.raise_shutdown_request()` to signal
     graceful termination requests (in :func:`~PseudoTerminal.capture_loop()`).
