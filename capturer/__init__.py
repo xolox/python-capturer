@@ -1,8 +1,10 @@
 # Easily capture stdout/stderr of the current process and subprocesses.
 #
 # Author: Peter Odding <peter@peterodding.com>
-# Last Change: October 9, 2016
-# URL: https://capturer.readthedocs.org
+# Last Change: November 12, 2016
+# URL: https://capturer.readthedocs.io
+
+"""Easily capture stdout/stderr of the current process and subprocesses."""
 
 # Standard library modules.
 import multiprocessing
@@ -15,6 +17,7 @@ import tempfile
 import time
 
 # External dependencies.
+from humanfriendly.text import compact, dedent
 from humanfriendly.terminal import clean_terminal_output
 
 interpret_carriage_returns = clean_terminal_output
@@ -75,7 +78,7 @@ class MultiProcessHelper(object):
     """
 
     def __init__(self):
-        """Construct a :class:`MultiProcessHelper` object."""
+        """Initialize a :class:`MultiProcessHelper` object."""
         self.processes = []
 
     def start_child(self, target):
@@ -131,7 +134,8 @@ class CaptureOutput(MultiProcessHelper):
 
     """Context manager to capture the standard output and error streams."""
 
-    def __init__(self, merged=True, encoding=DEFAULT_TEXT_ENCODING, termination_delay=TERMINATION_DELAY, chunk_size=1024):
+    def __init__(self, merged=True, encoding=DEFAULT_TEXT_ENCODING,
+                 termination_delay=TERMINATION_DELAY, chunk_size=1024):
         """
         Initialize a :class:`CaptureOutput` object.
 
@@ -238,12 +242,6 @@ class CaptureOutput(MultiProcessHelper):
             self.output = self.allocate_pty(relay_fd=self.stderr_stream.original_fd)
             for kind, stream in self.streams:
                 self.output.attach(stream)
-            # Enable compatibility with the old API where stdout/stderr were
-            # unconditionally captured as a single stream and so these methods
-            # were available on the CaptureOutput class (because that made
-            # sense back then :-).
-            for name in ('get_handle', 'get_bytes', 'get_lines', 'get_text', 'save_to_handle', 'save_to_path'):
-                setattr(self, name, getattr(self.output, name))
         else:
             # Capture and relay stdout/stderr as separate streams.
             self.output_queue = multiprocessing.Queue()
@@ -314,13 +312,15 @@ class CaptureOutput(MultiProcessHelper):
 class OutputBuffer(object):
 
     """
-    Helper for :func:`CaptureOutput.merge_loop()` to buffer captured output and
-    flush to the appropriate stream after each line break.
+    Helper for :func:`CaptureOutput.merge_loop()`.
+
+    Buffers captured output and flushes to the appropriate stream after each
+    line break.
     """
 
     def __init__(self, fd):
         """
-        Construct an :class:`OutputBuffer` object.
+        Initialize an :class:`OutputBuffer` object.
 
         :param fd: The number of the file descriptor where output should be
                    flushed (an integer).
@@ -347,8 +347,9 @@ class OutputBuffer(object):
 class PseudoTerminal(MultiProcessHelper):
 
     """
-    Helper for :class:`CaptureOutput` that manages capturing of output and
-    exposing the captured output.
+    Helper for :class:`CaptureOutput`.
+
+    Manages capturing of output and exposing the captured output.
     """
 
     def __init__(self, encoding, termination_delay, chunk_size, relay_fd, output_queue, queue_token):
@@ -435,8 +436,17 @@ class PseudoTerminal(MultiProcessHelper):
         for stream in self.streams:
             stream.restore()
 
+    # The CaptureOutput class contains proxy methods for the get_handle(),
+    # get_bytes(), get_lines(), get_text(), save_to_handle() and save_to_path()
+    # methods defined below. By default Sphinx generates method signatures of
+    # the form f(proxy, *args, **kw) for these proxy methods, with the result
+    # that the online documentation is rather confusing. As a workaround I've
+    # included explicit method signatures in the first line of each of the
+    # docstrings. This works because of the following Sphinx option:
+    # http://www.sphinx-doc.org/en/latest/ext/autodoc.html#confval-autodoc_docstring_signature
+
     def get_handle(self, partial=PARTIAL_DEFAULT):
-        """
+        """get_handle(partial=False)
         Get the captured output as a Python file object.
 
         :param partial: If :data:`True` (*not the default*) the partial output
@@ -470,7 +480,7 @@ class PseudoTerminal(MultiProcessHelper):
         return self.output_handle
 
     def get_bytes(self, partial=PARTIAL_DEFAULT):
-        """
+        """get_bytes(partial=False)
         Get the captured output as binary data.
 
         :param partial: Refer to :func:`get_handle()` for details.
@@ -479,7 +489,7 @@ class PseudoTerminal(MultiProcessHelper):
         return self.get_handle(partial).read()
 
     def get_lines(self, interpreted=True, partial=PARTIAL_DEFAULT):
-        """
+        """get_lines(interpreted=True, partial=False)
         Get the captured output split into lines.
 
         :param interpreted: If :data:`True` (the default) captured output is
@@ -499,7 +509,7 @@ class PseudoTerminal(MultiProcessHelper):
             return output.splitlines()
 
     def get_text(self, interpreted=True, partial=PARTIAL_DEFAULT):
-        """
+        """get_text(interpreted=True, partial=False)
         Get the captured output as a single string.
 
         :param interpreted: If :data:`True` (the default) captured output is
@@ -518,7 +528,7 @@ class PseudoTerminal(MultiProcessHelper):
         return output
 
     def save_to_handle(self, handle, partial=PARTIAL_DEFAULT):
-        """
+        """save_to_handle(handle, partial=False)
         Save the captured output to an open file handle.
 
         :param handle: A writable file-like object.
@@ -527,7 +537,7 @@ class PseudoTerminal(MultiProcessHelper):
         shutil.copyfileobj(self.get_handle(partial), handle)
 
     def save_to_path(self, filename, partial=PARTIAL_DEFAULT):
-        """
+        """save_to_path(filename, partial=False)
         Save the captured output to a file.
 
         :param filename: The pathname of the file where the captured output
@@ -625,13 +635,48 @@ class Stream(object):
 
 
 def enable_old_api():
+    """
+    Enable backwards compatibility with the old API.
+
+    This function is called when the :mod:`capturer` module is imported. It
+    modifies the :class:`CaptureOutput` class to install method proxies for
+    :func:`~PseudoTerminal.get_handle()`, :func:`~PseudoTerminal.get_bytes()`,
+    :func:`~PseudoTerminal.get_lines()`, :func:`~PseudoTerminal.get_text()`,
+    :func:`~PseudoTerminal.save_to_handle()` and
+    :func:`~PseudoTerminal.save_to_path()`.
+    """
     for name in ('get_handle', 'get_bytes', 'get_lines', 'get_text', 'save_to_handle', 'save_to_path'):
         def method_proxy(proxy, *args, **kw):
             if not hasattr(proxy, 'output'):
-                raise TypeError("The old calling interface is only supported when merged=True and start_capture() has been called!")
+                raise TypeError(compact("""
+                    The old calling interface is only supported when
+                    merged=True and start_capture() has been called!
+                """))
             real_method = getattr(proxy.output, name)
             return real_method(*args, **kw)
-        method_proxy.__doc__ = getattr(PseudoTerminal, name).__doc__
+        docstring = getattr(PseudoTerminal, name).__doc__
+        # Change the docstring to explain that this concerns a proxy method,
+        # but only when Sphinx is active (to avoid wasting time generating a
+        # docstring that no one is going to look at).
+        if 'sphinx' in sys.modules:
+            # Remove the signature from the docstring to make it possible to
+            # remove leading indentation from the remainder of the docstring.
+            lines = docstring.splitlines()
+            signature = lines.pop(0)
+            # Recompose the docstring from the signature, the remainder of the
+            # original docstring and the note about proxy methods.
+            docstring = '\n\n'.join([
+                signature,
+                dedent('\n'.join(lines)),
+                dedent("""
+                    .. note:: This method is a proxy for the :func:`~PseudoTerminal.{name}()`
+                              method of the :class:`PseudoTerminal` class. It requires
+                              `merged` to be :data:`True` and it expects that
+                              :func:`start_capture()` has been called. If this is not
+                              the case then :exc:`~exceptions.TypeError` is raised.
+                """, name=name),
+            ])
+        method_proxy.__doc__ = docstring
         setattr(CaptureOutput, name, method_proxy)
 
 

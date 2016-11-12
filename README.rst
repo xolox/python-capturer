@@ -10,8 +10,8 @@ capturer: Easily capture stdout/stderr of the current process and subprocesses
 The `capturer` package makes it easy to capture the stdout_ and stderr_ streams
 of the current process *and subprocesses*. Output can be relayed to the
 terminal in real time but is also available to the Python program for
-additional processing. It's currently tested on Python 2.6, 2.7, 3.4 and PyPy.
-For usage instructions please refer to the documentation_.
+additional processing. It's currently tested on Python 2.6, 2.7, 3.4, 3.5 and
+PyPy. For usage instructions please refer to the documentation_.
 
 .. contents::
    :local:
@@ -171,10 +171,10 @@ not like it's very relevant :-).
 
 .. External references:
 .. _capture: https://pypi.python.org/pypi/capture
-.. _documentation: https://capturer.readthedocs.org
-.. _get_bytes(): https://capturer.readthedocs.org/en/latest/#capturer.CaptureOutput.get_bytes
-.. _get_lines(): https://capturer.readthedocs.org/en/latest/#capturer.CaptureOutput.get_lines
-.. _get_text(): https://capturer.readthedocs.org/en/latest/#capturer.CaptureOutput.get_text
+.. _documentation: https://capturer.readthedocs.io
+.. _get_bytes(): https://capturer.readthedocs.io/en/latest/#capturer.CaptureOutput.get_bytes
+.. _get_lines(): https://capturer.readthedocs.io/en/latest/#capturer.CaptureOutput.get_lines
+.. _get_text(): https://capturer.readthedocs.io/en/latest/#capturer.CaptureOutput.get_text
 .. _GitHub: https://github.com/xolox/python-capturer
 .. _gpg: https://en.wikipedia.org/wiki/GNU_Privacy_Guard
 .. _how pytest does it: https://pytest.org/latest/capture.html
@@ -185,7 +185,7 @@ not like it's very relevant :-).
 .. _pty.openpty(): https://docs.python.org/2/library/pty.html#pty.openpty
 .. _PyPI: https://pypi.python.org/pypi/capturer
 .. _pytest: https://pypi.python.org/pypi/pytest
-.. _Read the Docs: https://capturer.readthedocs.org
+.. _Read the Docs: https://capturer.readthedocs.io
 .. _ssh: https://en.wikipedia.org/wiki/Secure_Shell
 .. _stderr: https://en.wikipedia.org/wiki/Standard_streams#Standard_error_.28stderr.29
 .. _stdin: https://en.wikipedia.org/wiki/Standard_streams#Standard_input_.28stdin.29

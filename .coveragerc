@@ -2,9 +2,7 @@
 # http://nedbatchelder.com/code/coverage/
 
 [run]
-concurrency = multiprocessing
 omit = capturer/tests.py
-parallel = True
 source = capturer
 
 # vim: ft=dosini
