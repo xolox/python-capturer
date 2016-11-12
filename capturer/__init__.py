@@ -20,6 +20,9 @@ import time
 from humanfriendly.text import compact, dedent
 from humanfriendly.terminal import clean_terminal_output
 
+# Semi-standard module versioning.
+__version__ = '2.3'
+
 interpret_carriage_returns = clean_terminal_output
 """
 Alias to :func:`humanfriendly.terminal.clean_terminal_output()`.
@@ -62,9 +65,6 @@ STDERR_FD = 2
 The number of the file descriptor that refers to the standard error stream (an
 integer).
 """
-
-# Semi-standard module versioning.
-__version__ = '2.2'
 
 
 def enable_old_api():
