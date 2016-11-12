@@ -67,6 +67,67 @@ integer).
 __version__ = '2.2'
 
 
+def enable_old_api():
+    """
+    Enable backwards compatibility with the old API.
+
+    This function is called when the :mod:`capturer` module is imported. It
+    modifies the :class:`CaptureOutput` class to install method proxies for
+    :func:`~PseudoTerminal.get_handle()`, :func:`~PseudoTerminal.get_bytes()`,
+    :func:`~PseudoTerminal.get_lines()`, :func:`~PseudoTerminal.get_text()`,
+    :func:`~PseudoTerminal.save_to_handle()` and
+    :func:`~PseudoTerminal.save_to_path()`.
+    """
+    for name in ('get_handle', 'get_bytes', 'get_lines', 'get_text', 'save_to_handle', 'save_to_path'):
+        setattr(CaptureOutput, name, create_proxy_method(name))
+
+
+def create_proxy_method(name):
+    """
+    Helper for :func:`enable_old_api()` to create proxy methods.
+
+    :param name: The name of the :class:`PseudoTerminal` method to call when
+                 the proxy method is called.
+    :returns: A proxy method (a callable) to be installed on the
+              :class:`CaptureOutput` class.
+    """
+    # Define the proxy method.
+    def proxy_method(self, *args, **kw):
+        if not hasattr(self, 'output'):
+            raise TypeError(compact("""
+                The old calling interface is only supported when
+                merged=True and start_capture() has been called!
+            """))
+        real_method = getattr(self.output, name)
+        return real_method(*args, **kw)
+    # Get the docstring of the real method.
+    docstring = getattr(PseudoTerminal, name).__doc__
+    # Change the docstring to explain that this concerns a proxy method,
+    # but only when Sphinx is active (to avoid wasting time generating a
+    # docstring that no one is going to look at).
+    if 'sphinx' in sys.modules:
+        # Remove the signature from the docstring to make it possible to
+        # remove leading indentation from the remainder of the docstring.
+        lines = docstring.splitlines()
+        signature = lines.pop(0)
+        # Recompose the docstring from the signature, the remainder of the
+        # original docstring and the note about proxy methods.
+        docstring = '\n\n'.join([
+            signature,
+            dedent('\n'.join(lines)),
+            dedent("""
+                .. note:: This method is a proxy for the :func:`~PseudoTerminal.{name}()`
+                          method of the :class:`PseudoTerminal` class. It requires
+                          `merged` to be :data:`True` and it expects that
+                          :func:`start_capture()` has been called. If this is not
+                          the case then :exc:`~exceptions.TypeError` is raised.
+            """, name=name),
+        ])
+    # Copy the (possible modified) docstring.
+    proxy_method.__doc__ = docstring
+    return proxy_method
+
+
 class MultiProcessHelper(object):
 
     """
@@ -632,52 +693,6 @@ class Stream(object):
         if self.is_redirected:
             os.dup2(self.original_fd, self.fd)
             self.is_redirected = False
-
-
-def enable_old_api():
-    """
-    Enable backwards compatibility with the old API.
-
-    This function is called when the :mod:`capturer` module is imported. It
-    modifies the :class:`CaptureOutput` class to install method proxies for
-    :func:`~PseudoTerminal.get_handle()`, :func:`~PseudoTerminal.get_bytes()`,
-    :func:`~PseudoTerminal.get_lines()`, :func:`~PseudoTerminal.get_text()`,
-    :func:`~PseudoTerminal.save_to_handle()` and
-    :func:`~PseudoTerminal.save_to_path()`.
-    """
-    for name in ('get_handle', 'get_bytes', 'get_lines', 'get_text', 'save_to_handle', 'save_to_path'):
-        def method_proxy(proxy, *args, **kw):
-            if not hasattr(proxy, 'output'):
-                raise TypeError(compact("""
-                    The old calling interface is only supported when
-                    merged=True and start_capture() has been called!
-                """))
-            real_method = getattr(proxy.output, name)
-            return real_method(*args, **kw)
-        docstring = getattr(PseudoTerminal, name).__doc__
-        # Change the docstring to explain that this concerns a proxy method,
-        # but only when Sphinx is active (to avoid wasting time generating a
-        # docstring that no one is going to look at).
-        if 'sphinx' in sys.modules:
-            # Remove the signature from the docstring to make it possible to
-            # remove leading indentation from the remainder of the docstring.
-            lines = docstring.splitlines()
-            signature = lines.pop(0)
-            # Recompose the docstring from the signature, the remainder of the
-            # original docstring and the note about proxy methods.
-            docstring = '\n\n'.join([
-                signature,
-                dedent('\n'.join(lines)),
-                dedent("""
-                    .. note:: This method is a proxy for the :func:`~PseudoTerminal.{name}()`
-                              method of the :class:`PseudoTerminal` class. It requires
-                              `merged` to be :data:`True` and it expects that
-                              :func:`start_capture()` has been called. If this is not
-                              the case then :exc:`~exceptions.TypeError` is raised.
-                """, name=name),
-            ])
-        method_proxy.__doc__ = docstring
-        setattr(CaptureOutput, name, method_proxy)
 
 
 class ShutdownRequested(Exception):
