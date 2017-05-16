@@ -3,7 +3,7 @@
 # Setup script for the `capturer' package.
 #
 # Author: Peter Odding <peter@peterodding.com>
-# Last Change: November 12, 2016
+# Last Change: May 17, 2017
 # URL: https://capturer.readthedocs.io
 
 """
@@ -87,6 +87,7 @@ setup(
         'Programming Language :: Python :: 3',
         'Programming Language :: Python :: 3.4',
         'Programming Language :: Python :: 3.5',
+        'Programming Language :: Python :: 3.6',
         'Programming Language :: Python :: Implementation :: CPython',
         'Programming Language :: Python :: Implementation :: PyPy',
         'Topic :: Communications',

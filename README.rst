@@ -10,7 +10,7 @@ capturer: Easily capture stdout/stderr of the current process and subprocesses
 The `capturer` package makes it easy to capture the stdout_ and stderr_ streams
 of the current process *and subprocesses*. Output can be relayed to the
 terminal in real time but is also available to the Python program for
-additional processing. It's currently tested on cPython 2.6, 2.7, 3.4, 3.5
+additional processing. It's currently tested on cPython 2.6, 2.7, 3.4, 3.5, 3.6
 and PyPy (2.7). It's tested on Linux and Mac OS X and may work on other unixes
 but definitely won't work on Windows (due to the use of the platform dependent
 pty_ module). For usage instructions please refer to the documentation_.
