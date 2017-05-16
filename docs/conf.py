@@ -1,7 +1,7 @@
 # Easily capture stdout/stderr of the current process and subprocesses.
 #
 # Author: Peter Odding <peter@peterodding.com>
-# Last Change: November 12, 2016
+# Last Change: May 17, 2017
 # URL: https://capturer.readthedocs.io
 
 """Sphinx documentation configuration for the `capturer` project."""
@@ -32,7 +32,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = u'capturer'
-copyright = u'2016, Peter Odding'
+copyright = u'2017, Peter Odding'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
