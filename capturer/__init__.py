@@ -1,7 +1,7 @@
 # Easily capture stdout/stderr of the current process and subprocesses.
 #
 # Author: Peter Odding <peter@peterodding.com>
-# Last Change: November 12, 2016
+# Last Change: May 17, 2017
 # URL: https://capturer.readthedocs.io
 
 """Easily capture stdout/stderr of the current process and subprocesses."""
@@ -84,7 +84,7 @@ def enable_old_api():
 
 def create_proxy_method(name):
     """
-    Helper for :func:`enable_old_api()` to create proxy methods.
+    Create a proxy method for use by :func:`enable_old_api()`.
 
     :param name: The name of the :class:`PseudoTerminal` method to call when
                  the proxy method is called.
@@ -350,11 +350,12 @@ class CaptureOutput(MultiProcessHelper):
 
     def merge_loop(self, started_event):
         """
-        Internal method used to merge and relay output in a child process.
+        Merge and relay output in a child process.
 
-        This method is used when standard output and standard error are being
-        captured separately. It's responsible for emitting each captured line
-        on the appropriate stream without interleaving text within lines.
+        This internal method is used when standard output and standard error
+        are being captured separately. It's responsible for emitting each
+        captured line on the appropriate stream without interleaving text
+        within lines.
         """
         buffers = {
             STDOUT_FD: OutputBuffer(self.stdout_stream.original_fd),
