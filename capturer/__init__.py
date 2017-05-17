@@ -404,6 +404,7 @@ class OutputBuffer(object):
     def flush(self):
         """Flush any remaining buffered output to the stream."""
         os.write(self.fd, self.buffer)
+        self.buffer = b''
 
 
 class PseudoTerminal(MultiProcessHelper):
