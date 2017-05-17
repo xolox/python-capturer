@@ -196,7 +196,8 @@ class CaptureOutput(MultiProcessHelper):
     """Context manager to capture the standard output and error streams."""
 
     def __init__(self, merged=True, encoding=DEFAULT_TEXT_ENCODING,
-                 termination_delay=TERMINATION_DELAY, chunk_size=1024):
+                 termination_delay=TERMINATION_DELAY, chunk_size=1024,
+                 relay=True):
         """
         Initialize a :class:`CaptureOutput` object.
 
@@ -217,6 +218,10 @@ class CaptureOutput(MultiProcessHelper):
         :param chunk_size: The maximum number of bytes to read from the
                            captured streams on each call to :func:`os.read()`
                            (an integer).
+        :param relay: If this is :data:`True` (the default) then captured
+                      output is relayed to the terminal or parent process,
+                      if it's :data:`False` the captured output is hidden
+                      (swallowed).
         """
         # Initialize the superclass.
         super(CaptureOutput, self).__init__()
@@ -224,6 +229,7 @@ class CaptureOutput(MultiProcessHelper):
         self.chunk_size = chunk_size
         self.encoding = encoding
         self.merged = merged
+        self.relay = relay
         self.termination_delay = termination_delay
         # Initialize instance variables.
         self.pseudo_terminals = []
@@ -299,14 +305,20 @@ class CaptureOutput(MultiProcessHelper):
         if self.is_capturing:
             raise TypeError("Output capturing is already enabled!")
         if self.merged:
-            # Capture and relay stdout/stderr as one stream.
-            self.output = self.allocate_pty(relay_fd=self.stderr_stream.original_fd)
+            # Capture (and most likely relay) stdout/stderr as one stream.
+            fd = self.stderr_stream.original_fd if self.relay else None
+            self.output = self.allocate_pty(relay_fd=fd)
             for kind, stream in self.streams:
                 self.output.attach(stream)
         else:
-            # Capture and relay stdout/stderr as separate streams.
-            self.output_queue = multiprocessing.Queue()
-            self.start_child(self.merge_loop)
+            # Capture (and most likely relay) stdout/stderr as separate streams.
+            if self.relay:
+                # Start the subprocess to relay output.
+                self.output_queue = multiprocessing.Queue()
+                self.start_child(self.merge_loop)
+            else:
+                # Disable relaying of output.
+                self.output_queue = None
             self.stdout = self.allocate_pty(output_queue=self.output_queue, queue_token=STDOUT_FD)
             self.stderr = self.allocate_pty(output_queue=self.output_queue, queue_token=STDERR_FD)
             for kind, stream in self.streams:
