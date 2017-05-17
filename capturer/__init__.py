@@ -21,7 +21,7 @@ from humanfriendly.text import compact, dedent
 from humanfriendly.terminal import clean_terminal_output
 
 # Semi-standard module versioning.
-__version__ = '2.3'
+__version__ = '2.4'
 
 interpret_carriage_returns = clean_terminal_output
 """
