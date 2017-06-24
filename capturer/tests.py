@@ -1,26 +1,26 @@
 # Easily capture stdout/stderr of the current process and subprocesses.
 #
 # Author: Peter Odding <peter@peterodding.com>
-# Last Change: November 12, 2016
+# Last Change: June 24, 2017
 # URL: https://capturer.readthedocs.io
 
 """Test suite for the `capturer` package."""
 
 # Standard library modules.
 import os
-import random
-import string
 import subprocess
 import sys
 import tempfile
-import time
 import unittest
+
+# External dependencies.
+from humanfriendly.testing import TestCase, random_string, retry
 
 # The module we're testing.
 from capturer import interpret_carriage_returns, CaptureOutput, Stream
 
 
-class CapturerTestCase(unittest.TestCase):
+class CapturerTestCase(TestCase):
 
     """Container for the `capturer` test suite."""
 
@@ -191,22 +191,6 @@ class CapturerTestCase(unittest.TestCase):
             sys.stderr.write(expected_stderr + "\n")
             assert expected_stdout in capturer.stdout.get_lines()
             assert expected_stderr in capturer.stderr.get_lines()
-
-
-def random_string():
-    """Generate a random string."""
-    length = random.randint(25, 100)
-    characters = string.ascii_letters + string.digits
-    return ''.join(random.choice(characters) for i in range(length))
-
-
-def retry(func, timeout=10):
-    """Retry a function until it returns True or the timeout passes."""
-    time_started = time.time()
-    while (time.time() - time_started) < timeout:
-        if func():
-            return
-    assert False, "Timeout expired but function never passed all assertions!"
 
 
 if __name__ == '__main__':
