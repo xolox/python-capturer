@@ -7,13 +7,13 @@ capturer: Easily capture stdout/stderr of the current process and subprocesses
 .. image:: https://coveralls.io/repos/xolox/python-capturer/badge.svg?branch=master
   :target: https://coveralls.io/r/xolox/python-capturer?branch=master
 
-The `capturer` package makes it easy to capture the stdout_ and stderr_ streams
+The capturer package makes it easy to capture the stdout_ and stderr_ streams
 of the current process *and subprocesses*. Output can be relayed to the
 terminal in real time but is also available to the Python program for
-additional processing. It's currently tested on cPython 2.6, 2.7, 3.4, 3.5, 3.6
-and PyPy (2.7). It's tested on Linux and Mac OS X and may work on other unixes
-but definitely won't work on Windows (due to the use of the platform dependent
-pty_ module). For usage instructions please refer to the documentation_.
+additional processing. It's currently tested on cPython 2.7, 3.5, 3.6 and PyPy
+(2.7). It's tested on Linux and Mac OS X and may work on other unixes but
+definitely won't work on Windows (due to the use of the platform dependent pty_
+module). For usage instructions please refer to the documentation_.
 
 .. contents::
    :local:
@@ -34,7 +34,7 @@ Installation
 The `capturer` package is available on PyPI_ which means installation should be
 as simple as:
 
-.. code-block:: sh
+.. code-block:: console
 
    $ pip install capturer
 
