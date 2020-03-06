@@ -1,12 +1,13 @@
-# Makefile for the `capturer' package.
+# Makefile for the 'capturer' package.
 #
 # Author: Peter Odding <peter@peterodding.com>
-# Last Change: November 12, 2016
+# Last Change: March 7, 2020
 # URL: https://github.com/xolox/python-capturer
 
 PACKAGE_NAME = capturer
 WORKON_HOME ?= $(HOME)/.virtualenvs
 VIRTUAL_ENV ?= $(WORKON_HOME)/$(PACKAGE_NAME)
+PYTHON ?= python3
 PATH := $(VIRTUAL_ENV)/bin:$(PATH)
 MAKE := $(MAKE) --no-print-directory
 SHELL = bash
@@ -28,40 +29,40 @@ default:
 
 install:
 	@test -d "$(VIRTUAL_ENV)" || mkdir -p "$(VIRTUAL_ENV)"
-	@test -x "$(VIRTUAL_ENV)/bin/python" || virtualenv --quiet "$(VIRTUAL_ENV)"
-	@test -x "$(VIRTUAL_ENV)/bin/pip" || easy_install pip
-	@test -x "$(VIRTUAL_ENV)/bin/pip-accel" || pip install --quiet pip-accel
-	@pip-accel install --quiet --requirement=requirements.txt
+	@test -x "$(VIRTUAL_ENV)/bin/python" || virtualenv --python=$(PYTHON) --quiet "$(VIRTUAL_ENV)"
+	@pip install --quiet --requirement=requirements.txt
 	@pip uninstall --yes $(PACKAGE_NAME) &>/dev/null || true
 	@pip install --quiet --no-deps --ignore-installed .
 
 reset:
-	$(MAKE) clean
-	rm -Rf "$(VIRTUAL_ENV)"
-	$(MAKE) install
+	@$(MAKE) clean
+	@rm -Rf "$(VIRTUAL_ENV)"
+	@$(MAKE) install
 
 check: install
-	@scripts/check-code-style.sh
+	@pip install --upgrade --quiet --requirement=requirements-checks.txt
+	@flake8
 
 test: install
-	@pip-accel install --quiet --requirement=requirements-tests.txt
+	@pip install --quiet --requirement=requirements-tests.txt
 	@py.test --cov --cov-report=html --no-cov-on-fail
 	@coverage report --fail-under=90
 
 tox: install
-	@pip-accel install --quiet tox && tox
+	@pip install --quiet tox
+	@tox
 
 docs: install
-	@pip-accel install --quiet sphinx
+	@pip install --quiet sphinx
 	@cd docs && sphinx-build -nb html -d build/doctrees . build/html
 
 publish: install
-	git push origin && git push --tags origin
-	$(MAKE) clean
-	pip-accel install --quiet twine wheel
-	python setup.py sdist bdist_wheel
-	twine upload dist/*
-	$(MAKE) clean
+	@git push origin && git push --tags origin
+	@$(MAKE) clean
+	@pip install --quiet twine wheel
+	@python setup.py sdist bdist_wheel
+	@twine upload dist/*
+	@$(MAKE) clean
 
 clean:
 	@rm -Rf *.egg .cache .coverage .tox build dist docs/build htmlcov
