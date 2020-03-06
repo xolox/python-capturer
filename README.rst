@@ -164,7 +164,7 @@ License
 
 This software is licensed under the `MIT license`_.
 
-© 2017 Peter Odding.
+© 2020 Peter Odding.
 
 A big thanks goes out to the pytest_ developers because pytest's mechanism for
 capturing the output of subprocesses provided inspiration for the `capturer`
