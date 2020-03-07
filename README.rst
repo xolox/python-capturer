@@ -155,9 +155,9 @@ Contact
 -------
 
 The latest version of `capturer` is available on PyPI_ and GitHub_. The
-documentation is hosted on `Read the Docs`_. For bug reports please create an
-issue on GitHub_. If you have questions, suggestions, etc. feel free to send me
-an e-mail at `peter@peterodding.com`_.
+documentation is hosted on `Read the Docs`_ and includes a changelog_. For bug
+reports please create an issue on GitHub_. If you have questions, suggestions,
+etc. feel free to send me an e-mail at `peter@peterodding.com`_.
 
 License
 -------
@@ -173,6 +173,7 @@ not like it's very relevant :-).
 
 .. External references:
 .. _capture: https://pypi.org/project/capture
+.. _changelog: https://capturer.readthedocs.io/en/latest/changelog.html
 .. _documentation: https://capturer.readthedocs.io
 .. _get_bytes(): https://capturer.readthedocs.io/en/latest/api.html#capturer.CaptureOutput.get_bytes
 .. _get_lines(): https://capturer.readthedocs.io/en/latest/api.html#capturer.CaptureOutput.get_lines
