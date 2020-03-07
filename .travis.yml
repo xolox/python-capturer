@@ -9,12 +9,13 @@ matrix:
   - python: 3.5
   - python: 3.6
 install:
-  - scripts/install-on-travis.sh
+  - scripts/travis.sh pip install --upgrade --requirement=requirements-travis.txt
+  - scripts/travis.sh LC_ALL=C pip install .
 script:
-  - scripts/run-on-travis.sh make check
-  - scripts/run-on-travis.sh make test
+  - scripts/travis.sh make check
+  - scripts/travis.sh make test
 after_success:
-  - scripts/run-on-travis.sh coveralls
+  - scripts/travis.sh coveralls
 branches:
   except:
     - /^[0-9]/
