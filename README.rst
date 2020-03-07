@@ -174,9 +174,9 @@ not like it's very relevant :-).
 .. External references:
 .. _capture: https://pypi.org/project/capture
 .. _documentation: https://capturer.readthedocs.io
-.. _get_bytes(): https://capturer.readthedocs.io/en/latest/#capturer.CaptureOutput.get_bytes
-.. _get_lines(): https://capturer.readthedocs.io/en/latest/#capturer.CaptureOutput.get_lines
-.. _get_text(): https://capturer.readthedocs.io/en/latest/#capturer.CaptureOutput.get_text
+.. _get_bytes(): https://capturer.readthedocs.io/en/latest/api.html#capturer.CaptureOutput.get_bytes
+.. _get_lines(): https://capturer.readthedocs.io/en/latest/api.html#capturer.CaptureOutput.get_lines
+.. _get_text(): https://capturer.readthedocs.io/en/latest/api.html#capturer.CaptureOutput.get_text
 .. _GitHub: https://github.com/xolox/python-capturer
 .. _gpg: https://en.wikipedia.org/wiki/GNU_Privacy_Guard
 .. _how pytest does it: https://pytest.org/latest/capture.html
