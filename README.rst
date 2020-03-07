@@ -172,7 +172,7 @@ package. No code was copied, but both projects are MIT licensed anyway, so it's
 not like it's very relevant :-).
 
 .. External references:
-.. _capture: https://pypi.python.org/pypi/capture
+.. _capture: https://pypi.org/project/capture
 .. _documentation: https://capturer.readthedocs.io
 .. _get_bytes(): https://capturer.readthedocs.io/en/latest/#capturer.CaptureOutput.get_bytes
 .. _get_lines(): https://capturer.readthedocs.io/en/latest/#capturer.CaptureOutput.get_lines
@@ -180,14 +180,14 @@ not like it's very relevant :-).
 .. _GitHub: https://github.com/xolox/python-capturer
 .. _gpg: https://en.wikipedia.org/wiki/GNU_Privacy_Guard
 .. _how pytest does it: https://pytest.org/latest/capture.html
-.. _iocapture: https://pypi.python.org/pypi/iocapture
+.. _iocapture: https://pypi.org/project/iocapture
 .. _MIT license: http://en.wikipedia.org/wiki/MIT_License
 .. _per user site-packages directory: https://www.python.org/dev/peps/pep-0370/
 .. _peter@peterodding.com: peter@peterodding.com
 .. _pty.openpty(): https://docs.python.org/2/library/pty.html#pty.openpty
 .. _pty: https://docs.python.org/2/library/pty.html
-.. _PyPI: https://pypi.python.org/pypi/capturer
-.. _pytest: https://pypi.python.org/pypi/pytest
+.. _PyPI: https://pypi.org/project/capturer
+.. _pytest: https://pypi.org/project/pytest
 .. _Read the Docs: https://capturer.readthedocs.io
 .. _ssh: https://en.wikipedia.org/wiki/Secure_Shell
 .. _stderr: https://en.wikipedia.org/wiki/Standard_streams#Standard_error_.28stderr.29
