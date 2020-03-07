@@ -1,7 +1,7 @@
 # Easily capture stdout/stderr of the current process and subprocesses.
 #
 # Author: Peter Odding <peter@peterodding.com>
-# Last Change: May 17, 2017
+# Last Change: March 7, 2020
 # URL: https://capturer.readthedocs.io
 
 """Easily capture stdout/stderr of the current process and subprocesses."""
@@ -17,20 +17,15 @@ import tempfile
 import time
 
 # External dependencies.
+from humanfriendly.deprecation import define_aliases
 from humanfriendly.text import compact, dedent
 from humanfriendly.terminal import clean_terminal_output
 
 # Semi-standard module versioning.
 __version__ = '2.4'
 
-interpret_carriage_returns = clean_terminal_output
-"""
-Alias to :func:`humanfriendly.terminal.clean_terminal_output()`.
-
-In `capturer` version 2.1.2 the ``interpret_carriage_returns()`` function was
-obsoleted by :func:`humanfriendly.terminal.clean_terminal_output()`. This alias
-remains for backwards compatibility.
-"""
+# Define aliases for backwards compatibility.
+define_aliases(module_name=__name__, interpret_carriage_returns='humanfriendly.terminal.clean_terminal_output')
 
 DEFAULT_TEXT_ENCODING = 'UTF-8'
 """
@@ -579,7 +574,7 @@ class PseudoTerminal(MultiProcessHelper):
         output = self.get_bytes(partial)
         output = output.decode(self.encoding)
         if interpreted:
-            return interpret_carriage_returns(output)
+            return clean_terminal_output(output)
         else:
             return output.splitlines()
 
@@ -599,7 +594,7 @@ class PseudoTerminal(MultiProcessHelper):
         output = self.get_bytes(partial)
         output = output.decode(self.encoding)
         if interpreted:
-            output = u'\n'.join(interpret_carriage_returns(output))
+            output = u'\n'.join(clean_terminal_output(output))
         return output
 
     def save_to_handle(self, handle, partial=PARTIAL_DEFAULT):

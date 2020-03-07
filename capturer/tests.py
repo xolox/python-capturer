@@ -1,7 +1,7 @@
 # Easily capture stdout/stderr of the current process and subprocesses.
 #
 # Author: Peter Odding <peter@peterodding.com>
-# Last Change: June 24, 2017
+# Last Change: March 7, 2020
 # URL: https://capturer.readthedocs.io
 
 """Test suite for the `capturer` package."""
@@ -14,10 +14,11 @@ import tempfile
 import unittest
 
 # External dependencies.
+from humanfriendly.terminal import clean_terminal_output
 from humanfriendly.testing import TestCase, random_string, retry
 
 # The module we're testing.
-from capturer import interpret_carriage_returns, CaptureOutput, Stream
+from capturer import CaptureOutput, Stream
 
 
 class CapturerTestCase(TestCase):
@@ -25,15 +26,15 @@ class CapturerTestCase(TestCase):
     """Container for the `capturer` test suite."""
 
     def test_carriage_return_interpretation(self):
-        """Sanity check the results of interpret_carriage_returns()."""
+        """Sanity check the results of clean_terminal_output()."""
         # Simple output should pass through unharmed.
-        assert interpret_carriage_returns('foo') == ['foo']
+        assert clean_terminal_output('foo') == ['foo']
         # Simple output should pass through unharmed.
-        assert interpret_carriage_returns('foo\nbar') == ['foo', 'bar']
+        assert clean_terminal_output('foo\nbar') == ['foo', 'bar']
         # Carriage returns and preceding substrings should be stripped.
-        assert interpret_carriage_returns('foo\rbar\nbaz') == ['bar', 'baz']
+        assert clean_terminal_output('foo\rbar\nbaz') == ['bar', 'baz']
         # Trailing empty lines should be stripped.
-        assert interpret_carriage_returns('foo\nbar\nbaz\n\n\n') == ['foo', 'bar', 'baz']
+        assert clean_terminal_output('foo\nbar\nbaz\n\n\n') == ['foo', 'bar', 'baz']
 
     def test_error_handling(self):
         """Test error handling code paths."""
