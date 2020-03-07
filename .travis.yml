@@ -8,6 +8,9 @@ matrix:
   - python: 2.7
   - python: 3.5
   - python: 3.6
+  - python: 3.7
+  - python: 3.8
+  - python: 3.9-dev
 install:
   - scripts/travis.sh pip install --upgrade --requirement=requirements-travis.txt
   - scripts/travis.sh LC_ALL=C pip install .
