@@ -11,6 +11,24 @@ to `semantic versioning`_.
 .. _Keep a Changelog: http://keepachangelog.com/
 .. _semantic versioning: http://semver.org/
 
+`Release 3.0`_ (2020-03-07)
+---------------------------
+
+This is a maintenance release that updates the supported Python
+versions, adds a changelog and makes some minor internal changes:
+
+- Added support for Python 3.7 and 3.8.
+- Dropped support for Python 2.6 and 3.4.
+- Actively deprecate ``interpret_carriage_returns()``.
+- Moved test helpers to :mod:`humanfriendly.testing`.
+- Include documentation in source distributions.
+- Use Python 3 for local development (``Makefile``).
+- Restructured the online documentation.
+- Updated PyPI domain in documentation.
+- Added this changelog.
+
+.. _Release 3.0: https://github.com/xolox/python-capturer/compare/2.4...3.0
+
 `Release 2.4`_ (2017-05-17)
 ---------------------------
 

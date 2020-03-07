@@ -22,7 +22,7 @@ from humanfriendly.text import compact, dedent
 from humanfriendly.terminal import clean_terminal_output
 
 # Semi-standard module versioning.
-__version__ = '2.4'
+__version__ = '3.0'
 
 # Define aliases for backwards compatibility.
 define_aliases(module_name=__name__, interpret_carriage_returns='humanfriendly.terminal.clean_terminal_output')
@@ -563,7 +563,7 @@ class PseudoTerminal(MultiProcessHelper):
         Get the captured output split into lines.
 
         :param interpreted: If :data:`True` (the default) captured output is
-                            processed using :func:`interpret_carriage_returns()`.
+                            processed using :func:`.clean_terminal_output()`.
         :param partial: Refer to :func:`get_handle()` for details.
         :returns: The captured output as a list of Unicode strings.
 
@@ -583,7 +583,7 @@ class PseudoTerminal(MultiProcessHelper):
         Get the captured output as a single string.
 
         :param interpreted: If :data:`True` (the default) captured output is
-                            processed using :func:`interpret_carriage_returns()`.
+                            processed using :func:`clean_terminal_output()`.
         :param partial: Refer to :func:`get_handle()` for details.
         :returns: The captured output as a Unicode string.
 
